@@ -1,0 +1,47 @@
+{
+  "random": {
+    "apgr": 0.5549820045156167,
+    "cpt_50": 49.0,
+    "cpt_80": 79.0,
+    "fit_seconds": 0.0,
+    "predict_seconds": 0.0,
+    "queries_per_second": 277156533.8,
+    "alpha_for_budget": {
+      "20%": 0.8014,
+      "30%": 0.6999,
+      "50%": 0.5006
+    }
+  },
+  "sw_ranking": {
+    "apgr": 0.6844623328290568,
+    "cpt_50": 32.0,
+    "cpt_80": 65.0,
+    "fit_seconds": 0.0,
+    "predict_seconds": 3.01,
+    "queries_per_second": 3316.0,
+    "alpha_for_budget": {
+      "20%": 0.3634,
+      "30%": 0.3315,
+      "50%": 0.2796
+    }
+  },
+  "logistic": {
+    "apgr": 0.6040301961450617,
+    "cpt_50": 42.0,
+    "cpt_80": 76.0,
+    "fit_seconds": 0.78,
+    "predict_seconds": 0.0,
+    "queries_per_second": 11473366.7,
+    "alpha_for_budget": {
+      "20%": 0.3776,
+      "30%": 0.3522,
+      "50%": 0.3134
+    }
+  },
+  "_meta": {
+    "train_rows": 50746,
+    "eval_rows": 9989,
+    "weak_quality_mean": 0.8540644645690918,
+    "strong_quality_mean": 1.0
+  }
+}
