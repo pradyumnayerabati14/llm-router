@@ -1,7 +1,13 @@
 .venv/
-data/
 __pycache__/
-*.pt
-.env
-LLM Router Paper.pdf
+*.pyc
 
+# large downloads, generated tables and cached embeddings
+data/
+models/
+*.pt
+
+.env
+.DS_Store
+"LLM Router Paper.pdf"
+*.pdf
