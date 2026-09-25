@@ -12,6 +12,7 @@ answer so the service is demonstrable offline.
 
 from __future__ import annotations
 
+import json
 import os
 import pathlib
 import time
@@ -28,9 +29,29 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 STRONG_MODEL = os.getenv("STRONG_MODEL", "gpt-4o")
 WEAK_MODEL = os.getenv("WEAK_MODEL", "mistral-small-latest")
-# alpha is the cost dial: send a query to the strong model when the router's
-# score >= alpha. Higher alpha => fewer strong calls => cheaper, slightly worse.
-ALPHA = float(os.getenv("ROUTER_ALPHA", "0.5"))
+DEFAULT_BUDGET = os.getenv("ROUTER_BUDGET", "30%")
+
+
+def _default_alpha() -> float:
+    """The cost dial: route to the strong model when score >= alpha.
+
+    Default it to the threshold that sends ROUTER_BUDGET of evaluation traffic
+    to the strong model, rather than a hard-coded 0.5. Scores are not calibrated
+    probabilities - most prompts do not need the strong model, so they cluster
+    low, and a fixed 0.5 would route nothing.
+    """
+    if "ROUTER_ALPHA" in os.environ:
+        return float(os.environ["ROUTER_ALPHA"])
+    metrics_path = ROOT / "results" / "metrics.json"
+    if metrics_path.exists():
+        metrics = json.loads(metrics_path.read_text())
+        alpha = metrics.get("logistic", {}).get("alpha_for_budget", {}).get(DEFAULT_BUDGET)
+        if alpha is not None:
+            return float(alpha)
+    return 0.5
+
+
+ALPHA = _default_alpha()
 
 app = FastAPI(title="LLM Router", version="0.1.0")
 _router: LogisticRouter | None = None
@@ -41,6 +62,17 @@ def get_router() -> LogisticRouter:
     if _router is None:
         _router = LogisticRouter.load(ROOT / "models" / "logistic.pt")
     return _router
+
+
+@app.on_event("startup")
+def warm_up() -> None:
+    """Load the router and the embedding model before the first request.
+
+    Without this the first call pays ~4 seconds of model loading, which looks
+    like the router being slow when it is really a cold start.
+    """
+    get_router()
+    embed(["warm up"])
 
 
 class RouteRequest(BaseModel):
